@@ -4,8 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="27c3981d-750f-4a67-9587-c77cce472ed1" name="Changes" comment="Enemies spawn and move towards the player.  They also get killed by the bullets.">
-      <change afterPath="$PROJECT_DIR$/assets/font/Pixeltype.ttf" afterDir="false" />
+    <list default="true" id="27c3981d-750f-4a67-9587-c77cce472ed1" name="Changes" comment="Added exp drops and leveling up. Leveling up currently doesn't do anything.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Game.py" beforeDir="false" afterPath="$PROJECT_DIR$/Game.py" afterDir="false" />
     </list>
@@ -41,15 +40,15 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Python.Game.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/Zachary/PycharmProjects/SkeletonSurvivor&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python.Game.executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "main",
+    "last_opened_file_path": "C:/Users/Zachary/PycharmProjects/SkeletonSurvivor"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\Zachary\PycharmProjects\SkeletonSurvivor" />
@@ -106,13 +105,22 @@
       <option name="project" value="LOCAL" />
       <updated>1712612801710</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Added exp drops and leveling up. Leveling up currently doesn't do anything.">
+      <option name="closed" value="true" />
+      <created>1712714754766</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1712714754766</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Created Project and Set Ground work" />
     <MESSAGE value="Added Basic movement and shooting" />
     <MESSAGE value="Enemies spawn and move towards the player.  They also get killed by the bullets." />
-    <option name="LAST_COMMIT_MESSAGE" value="Enemies spawn and move towards the player.  They also get killed by the bullets." />
+    <MESSAGE value="Added exp drops and leveling up. Leveling up currently doesn't do anything." />
+    <option name="LAST_COMMIT_MESSAGE" value="Added exp drops and leveling up. Leveling up currently doesn't do anything." />
   </component>
 </project>

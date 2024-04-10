@@ -18,6 +18,7 @@ pygame.display.set_caption("Auto Shooter")
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 BLACK = (0, 0, 0)
+GREEN = (0, 255, 0)
 
 damage_font = pygame.font.Font('assets/font/Pixeltype.ttf', 50)
 
@@ -57,6 +58,8 @@ class Bullet(pygame.sprite.Sprite):
         self.x_vel = 0
         self.range = 25
         self.lifetime = 0
+        self.enemies_hit = []
+        self.pierce = -1
         match direction:
             case "up":
                 self.y_vel = 20
@@ -68,56 +71,76 @@ class Bullet(pygame.sprite.Sprite):
                 self.x_vel = -20
 
     def update(self):
-        global y_vel
-        global x_vel
+        global y_vel, x_vel, enemies
         self.rect.x += self.x_vel - x_vel
         self.rect.y += self.y_vel - y_vel
         self.lifetime += 1
         if self.lifetime > self.range:
             self.kill()
+        enemies_hit = pygame.sprite.spritecollide(self, enemies, False)
+        for enemy in enemies_hit:
+            if not (enemy in self.enemies_hit):
+                enemy.hurt(1)
+                self.enemies_hit.append(enemy)
+                if len(self.enemies_hit) >= self.pierce and self.pierce >= 0:
+                    self.kill()
 
 
 class Enemy(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, x, y):
         super().__init__()
         global offset_y, offset_x
         self.image = pygame.Surface((50, 50))
         self.image.fill(BLACK)
         self.hurt_frames = 0
-        self.rect = self.image.get_rect(center=
-                                        ((randint(0, WIDTH) + offset_x)
-                                         , (randint(0, HEIGHT) + offset_y)))
+        self.damage = 1
+        self.rect = self.image.get_rect(center=(x + offset_x, y + offset_y))
         self.health = 3
 
     def drop_exp(self):
         global exp_drops
-        exp_drops.add(ExpDrop(10, self.rect.x, self.rect.y))
+        exp_drops.add(ExpDrop(1, self.rect.x, self.rect.y))
+
+    def hurt(self, amount):
+        self.health -= amount
+        damage_numbers.add(DamageNumber(str(amount), self.rect.x, self.rect.y, RED))
+        if self.health <= 0:
+            self.drop_exp()
+            self.drop_exp()
+            self.drop_exp()
+            self.kill()
 
     def update(self):
-        global bullets, damage_numbers, enemies
-        dx, dy = CENTER_WIDTH - self.rect.x, CENTER_HEIGHT - self.rect.y
+        global bullets, damage_numbers, enemies, player, damage_numbers
+        dx, dy = CENTER_WIDTH - self.rect.center[0], CENTER_HEIGHT - self.rect.center[1]
         dist = math.hypot(dx, dy)
         dx, dy = dx / dist, dy / dist
         self.rect.x += dx - x_vel
         self.rect.y += dy - y_vel
+        if pygame.sprite.spritecollide(self, player, False):
+            if abs(self.rect.center[0] - CENTER_WIDTH) > abs(self.rect.center[1] - CENTER_HEIGHT):
+                if self.rect.right <= CENTER_WIDTH:
+                    self.rect.right = player.sprite.rect.left
+                else:
+                    self.rect.left = player.sprite.rect.right
+            else:
+                if self.rect.bottom <= CENTER_HEIGHT:
+                    self.rect.bottom = player.sprite.rect.top
+                else:
+                    self.rect.top = player.sprite.rect.bottom
+
+            if self.hurt_frames == 0:
+                hurt(self.damage)
+                self.hurt_frames = 50
         if self.hurt_frames > 0:
             self.hurt_frames -= 1
-        elif pygame.sprite.spritecollide(self, bullets, False):
-            self.hurt_frames = 5
-            if self.health == 1:
-                self.drop_exp()
-                self.drop_exp()
-                self.drop_exp()
-                self.kill()
-            else:
-                self.health -= 1
-            damage_numbers.add(DamageNumber("1", self.rect.x, self.rect.y))
+
 
 class DamageNumber(pygame.sprite.Sprite):
-    def __init__(self, num, x, y):
+    def __init__(self, num, x, y, color):
         super().__init__()
-        self.image = damage_font.render(num, False, RED)
-        self.rect = self.image.get_rect(center = (x, y))
+        self.image = damage_font.render(num, False, color)
+        self.rect = self.image.get_rect(center=(x, y))
         self.lifetime = 0
 
     def update(self):
@@ -161,6 +184,7 @@ class ExpDrop(pygame.sprite.Sprite):
             exp_check(self.exp_amount)
             self.kill()
 
+
 def get_background(name):
     image = pygame.image.load(join("assets", "Background", name))
     _, _, width, height = image.get_rect()
@@ -181,12 +205,39 @@ def exp_check(amount):
         exp -= level_up_exp
         level_up_exp *= 1.5
         exp_bar_progress = pygame.Surface((0, 20))
+        damage_numbers.add(DamageNumber("Level up!", CENTER_WIDTH, CENTER_HEIGHT))
         exp_check(0)
     else:
-        exp_bar_progress = pygame.Surface(((exp/level_up_exp)*(WIDTH * 0.9), 20))
+        exp_bar_progress = pygame.Surface(((exp / level_up_exp) * (WIDTH * 0.9), 20))
         exp_bar_progress.fill(WHITE)
 
 
+def hurt(amount):
+    global life_amount, life_bar, health, max_health, damage_numbers
+    health -= amount
+    if (health <= 0):
+        reset()
+    else:
+        life_bar = pygame.Surface(((health / max_health) * 80, 5))
+        life_bar.fill(GREEN)
+        damage_numbers.add(DamageNumber(str(amount), CENTER_WIDTH, CENTER_HEIGHT, GREEN))
+
+
+def reset():
+    global health, max_health, offset_y, offset_x, level_up_exp, exp, life_bar, exp_bar_progress, bullets, enemies, damage_numbers
+    health = max_health
+    enemies.empty()
+    bullets.empty()
+    damage_numbers.empty()
+    exp_drops.empty()
+    offset_x = 0
+    offset_y = 0
+    level_up_exp = 1000
+    exp = 0
+    life_bar = pygame.Surface((80, 5))
+    life_bar.fill(GREEN)
+    exp_bar_progress = pygame.Surface((0, 20))
+    exp_bar_progress.fill(WHITE)
 
 
 player = pygame.sprite.GroupSingle()
@@ -197,16 +248,26 @@ enemies = pygame.sprite.Group()
 damage_numbers = pygame.sprite.Group()
 exp_drops = pygame.sprite.Group()
 
-#exp values
+# player stats
 exp = 0
 level_up_exp = 1000
+
+max_health = 100
+health = max_health
 
 exp_bar = pygame.Surface((WIDTH * 0.9, 20))
 
 exp_bar_progress = pygame.Surface((0, 20))
 exp_bar_progress.fill(WHITE)
 
+life_total_bar = pygame.Surface((80, 5))
+life_total_bar.fill(RED)
 
+life_bar = pygame.Surface((80, 5))
+life_bar.fill(GREEN)
+
+center_dot = pygame.Surface((1, 1))
+center_dot.fill(WHITE)
 
 # Game loop
 clock = pygame.time.Clock()
@@ -217,7 +278,7 @@ bullet_timer = pygame.USEREVENT + 1
 pygame.time.set_timer(bullet_timer, 250)
 
 enemy_timer = pygame.USEREVENT + 2
-pygame.time.set_timer(enemy_timer, 500)
+pygame.time.set_timer(enemy_timer, 50)
 
 y_vel = 0
 x_vel = 0
@@ -242,8 +303,12 @@ while running:
     exp_drops.draw(screen)
     exp_drops.update()
 
-    screen.blit(exp_bar, (WIDTH*0.05, HEIGHT*0.9))
-    screen.blit(exp_bar_progress, (WIDTH*0.05, HEIGHT*0.9))
+    screen.blit(exp_bar, (WIDTH * 0.05, HEIGHT * 0.9))
+    screen.blit(exp_bar_progress, (WIDTH * 0.05, HEIGHT * 0.9))
+    screen.blit(center_dot, (CENTER_WIDTH, CENTER_HEIGHT))
+
+    screen.blit(life_total_bar, (CENTER_WIDTH - 40, CENTER_HEIGHT - 40))
+    screen.blit(life_bar, (CENTER_WIDTH - 40, CENTER_HEIGHT - 40))
 
     # Event handling
     for event in pygame.event.get():
@@ -252,7 +317,8 @@ while running:
         if event.type == bullet_timer:
             bullets.add(Bullet("up"), Bullet("down"), Bullet("left"), Bullet("right"))
         if event.type == enemy_timer:
-            enemies.add(Enemy())
+            enemies.add(choice([Enemy(-30, randint(0, HEIGHT)), Enemy(WIDTH + 30, randint(0, HEIGHT)),
+                               Enemy(randint(0, WIDTH), -30), Enemy(randint(0, WIDTH), HEIGHT + 30)]))
 
     y_vel = 0
     x_vel = 0
