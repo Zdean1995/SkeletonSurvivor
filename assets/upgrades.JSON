@@ -1,0 +1,20 @@
+[
+	{
+		"Text": "Speed up!",
+		"Speed": 3
+	},
+	{
+		"Text": "Damage up!",
+		"Damage": 3
+	},
+	{
+		"Text": "Health up!",
+		"Health": 3
+	},
+	{
+		"Text": "Everything up!",
+		"Damage": 1,
+		"Speed": 1,
+		"Health": 1
+	}
+]
